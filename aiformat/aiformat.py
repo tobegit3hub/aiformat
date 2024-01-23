@@ -3,8 +3,8 @@
 import click
 import yaml
 
-import chatgpt_util
-import diff_util
+from . import chatgpt_util
+from . import diff_util
 
 def system_print(text):
    click.secho(text, bg='blue', fg='white')
