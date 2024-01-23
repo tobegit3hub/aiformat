@@ -1,0 +1,4 @@
+aiformat_commands:
+  format_code: "Format the following code and output the formated code: "
+  format_doc: "Format the following document and keep the format to output: "
+  translate_to_chinese: "Translate the following document in Chinese and output the translated text: "
