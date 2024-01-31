@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import os
+import pkg_resources
+import shutil
 import click
 import yaml
 from jinja2 import Template
@@ -29,12 +31,27 @@ def main(file_or_text, diff, inplace, recursive, verbose, command, model, temper
             print(f'{param}: {click.get_current_context().params[param]}')
 
     # Read yaml config
-    command_yaml_file = 'prompt/aiformat_commands.yaml'
-    with open(command_yaml_file, 'r') as file:
+    aiformat_commands = {}
+
+    config_dir = os.path.expanduser("~/.aiformat")
+    config_file_path = os.path.join(config_dir, 'commands.yaml')
+    
+    if not os.path.exists(config_dir):
+        os.makedirs(config_dir)
+
+    if not os.path.exists(config_file_path):
+        # Create yaml file from package yaml file
+        pkg_resource_path = pkg_resources.resource_filename("aiformat", "prompt/commands.yaml")
+        shutil.copy(pkg_resource_path, config_file_path)
+        system_print(f"Generate yaml config file in {config_file_path}")
+
+    
+    with open(config_file_path, 'r') as file:
         yaml_data = yaml.safe_load(file)
-    aiformat_commands = yaml_data.get('aiformat_commands', {})
+        aiformat_commands = yaml_data.get('aiformat_commands', {})
+
     if verbose:
-      system_print("Read aiformat_commands.yaml and get commands:")
+      system_print(f"Read config file in {config_file_path}:")
       for current_command, prompt in aiformat_commands.items():
         print(f'Supported command: {current_command}')
 
@@ -76,6 +93,9 @@ def main(file_or_text, diff, inplace, recursive, verbose, command, model, temper
 
 
     # Construct prompt
+    if command not in aiformat_commands:
+        print(f"Fail to get command from config file: {command}")
+        return
     command_prompt = aiformat_commands[command]
     template = Template(command_prompt)
 
