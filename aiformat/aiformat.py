@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import pkg_resources
 import shutil
 import click
 import yaml
@@ -12,16 +13,17 @@ from .print_util import system_print
 
 
 @click.command()
+@click.argument('command', required=True)
 @click.argument('file_or_text', required=True)
 @click.option('-d', '--diff', is_flag=True, help='Print the diff for the fixed source.')
 @click.option('-i', '--inplace', is_flag=True, help='Make changes to files in place.')
 @click.option('-r', '--recursive', is_flag=True, help='Run recursively over directories.')
 @click.option('-vv', '--verbose', is_flag=True, help='Print out file names while processing.')
-@click.option('-c', '--command', type=click.STRING, default="chat", help='Use the command, pass -vv to check supported commands.')
 @click.option('--model', type=click.STRING, default="gpt-3.5-turbo", help='Use the LLM model(gpt-3.5-turbo or gpt-4-1106-preview).')
 @click.option('--temperature', type=click.FLOAT, default=0, help='Set temperature for the LLM model.')
 #@click.option('-p', '--parallel', is_flag=True, help='Run in parallel when formatting multiple files.')
-def main(file_or_text, diff, inplace, recursive, verbose, command, model, temperature):
+def main(command, file_or_text, diff, inplace, recursive, verbose, model, temperature):
+
     # Print parameter
     if verbose:
         system_print('Command-line options:')
@@ -50,6 +52,12 @@ def main(file_or_text, diff, inplace, recursive, verbose, command, model, temper
         system_print(f"Read config file in {config_file_path}:")
         for current_command, prompt in aiformat_commands.items():
             print(f'Supported command: {current_command}')
+
+    # Print commands
+    if command == 'commands':
+        for current_command, prompt in aiformat_commands.items():
+            print(f'Command: {current_command}')
+        return
 
     # Read input which may be a string, a file or a directory
     content_list = []
