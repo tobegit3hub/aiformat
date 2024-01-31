@@ -1,6 +1,7 @@
 import os
 from openai import OpenAI
 
+
 class LlmModel(object):
     def __init__(self, model, temperature) -> None:
         self.model = model
@@ -21,11 +22,9 @@ class LlmModel(object):
                     "content": prompt,
                 }
             ],
-            
         )
 
         return chat_completion.choices[0].message.content
-
 
     def execute(self, prompt):
         # Request ChatGPT
@@ -36,7 +35,7 @@ class LlmModel(object):
         if chatgpt_output.startswith(prefix) and chatgpt_output.endswith(prefix):
             return self.remove_first_and_last_lines(chatgpt_output)
         return chatgpt_output
-    
+
     def remove_first_and_last_lines(self, text):
         lines = text.splitlines()
         # Remove first and last lines

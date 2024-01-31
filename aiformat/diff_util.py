@@ -1,5 +1,6 @@
 import difflib
 
+
 def print_diff(string1, string2):
     # Split strings into lines
     string1_lines = string1.splitlines()

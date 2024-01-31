@@ -1,37 +1,27 @@
 aiformat_commands:
-  format_code: >
-    "Format the following code and output the formated code:
-    
-    {{ text }}"
   format_content: >
-    Read the content below and try to understand its type. Then format the content and output the formated text:
-
+    Read the content below and try to format the content according to its type. Output the formated text:
     {{ text }}
-  optimize_code: >
-    Optimize the following code and output the optimized code:"
-
-    {{ text }}
-  format_doc2: >
-    Format the document below. Ensure that formatting is consistent and output the formated document:
-
-    {{ text }}
+  format_code: >
+    Recognize the programming language of the following code and use the best practices of its programming language to format the source code. Output the formated code:
+    {{ text }}"
   format_doc: >
     Format the document below. Ensure that formatting is consistent and output the formated tedocumentxt:
-
     {{ text }}
   to_chinese: >
     Translate the text below into Chinese. Ensure that formatting is consistent and output the translated text:
-
     {{ text }}
   to_english: >
     Translate the text below into English. Ensure that formatting is consistent and output the translated text:
-    
     {{ text }}
   explain_code: >
     Explain the code below in simple terms. Ensure that formatting is consistent and output the explanation:
-
     {{ text }}
   generate_unit_test: >
-    Generate a unit test for the following code and output the test code:
-
+    Generate a unit test for the following code and output the test code:\n\n{{ text }}
+  correct_spelling: >
+    Correct the spelling errors in the text below. Ensure that formatting is consistent and output the corrected text:
     {{ text }}
+  optimize_code: >
+    Recognize the programming language of the following code and use the best practices of its programming language to format the source code. Output the formated code:
+    {{ text }}    
