@@ -1,6 +1,6 @@
 # AIFormat
 
-The AI Formatter with LLM models for code and documents.
+The AI Formatter which leverages LLM models for source code and documents.
 
 ## Install
 
@@ -10,8 +10,16 @@ pip install aiformat
 
 ## Usage
 
+Set `OPENAI_API_KEY` environment variable to use the LLM models.
+
 ```
-Usage: aiformat.py [OPTIONS] FILES
+export OPENAI_API_KEY=sk-xxxxxx
+```
+
+Use `aiformat` command and update prompt in `aiformat_commands.yaml` if needed.
+
+```
+Usage: aiformat [OPTIONS] FILES
 
 Options:
   -d, --diff          print the diff for the fixed source
@@ -20,6 +28,7 @@ Options:
   -p, --parallel      run in parallel when formatting multiple files
   -vv, --verbose      print out file names while processing
   -c, --command TEXT  use the command to exceute, check commands in yaml file
+  -m, --model TEXT    use the LLM model, default is gpt-3.5-turbo
   --help              Show this message and exit.
 ```
 

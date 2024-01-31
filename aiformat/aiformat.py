@@ -1,88 +1,126 @@
 #!/usr/bin/env python3
 
+import os
 import click
 import yaml
+from jinja2 import Template
 
 from . import chatgpt_util
 from . import diff_util
+from .print_util import system_print
 
-def system_print(text):
-   click.secho(text, bg='blue', fg='white')
 
 @click.command()
-@click.argument('files')
-@click.option('-d', '--diff', is_flag=True, help='print the diff for the fixed source')
-@click.option('-i', '--inplace', is_flag=True, help='make changes to files in place')
-@click.option('-r', '--recursive', is_flag=True, help='run recursively over directories')
-@click.option('-p', '--parallel', is_flag=True, help='run in parallel when formatting multiple files')
-@click.option('-vv', '--verbose', is_flag=True, help='print out file names while processing')
-@click.option('-c', '--command', type=click.STRING, default="format_code", help='use the command to exceute, check commands in yaml file')
-def main(files, diff, inplace, recursive, parallel, verbose, command):
+@click.argument('file_or_text', required=True)
+@click.option('-d', '--diff', is_flag=True, help='Print the diff for the fixed source.')
+@click.option('-i', '--inplace', is_flag=True, help='Make changes to files in place.')
+@click.option('-r', '--recursive', is_flag=True, help='Run recursively over directories.')
+#@click.option('-p', '--parallel', is_flag=True, help='Run in parallel when formatting multiple files.')
+@click.option('-vv', '--verbose', is_flag=True, help='Print out file names while processing.')
+@click.option('-c', '--command', type=click.STRING, default="format_content", help='Use the command to exceute, use -vv to check supported commands.')
+@click.option('--model', type=click.STRING, default="gpt-3.5-turbo", help='Use the LLM model, could be gpt-3.5-turbo or gpt-4-1106-preview.')
+@click.option('--temperature', type=click.FLOAT, default=0, help='Set temperature for the LLM model.')
+def main(file_or_text, diff, inplace, recursive, verbose, command, model, temperature):
 
     # Print parameter
     if verbose:
-      system_print("Read command-line parameters:")
-      click.echo(f"Parameter file: {files}, diff: {diff}, inplace: {inplace}, recursive: {recursive}, parallel: {parallel}, verbose: {verbose}, command: {command}.")
+        system_print('Command-line options:')
+        for param in click.get_current_context().params:
+            print(f'{param}: {click.get_current_context().params[param]}')
 
     # Read yaml config
-    command_yaml_file = 'aiformat_commands.yaml'
+    command_yaml_file = 'prompt/aiformat_commands.yaml'
     with open(command_yaml_file, 'r') as file:
         yaml_data = yaml.safe_load(file)
     aiformat_commands = yaml_data.get('aiformat_commands', {})
     if verbose:
       system_print("Read aiformat_commands.yaml and get commands:")
-      for command, prompt in aiformat_commands.items():
-        print(f'Command: {command}\nPrompt: {prompt}\n')
+      for current_command, prompt in aiformat_commands.items():
+        print(f'Supported command: {current_command}')
 
-    
-    # Read input file
-    input_file_path = files
-    try:
-        with open(input_file_path, 'r', encoding='utf-8') as file:
-            input_file_content = file.read()
-    except FileNotFoundError:
-        print(f"File not found: {input_file_path}")
-        return None
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return None
+    # Read input which may be a string, a file or a directory
+    content_list = []
+    flie_name_list = []
+
+    if recursive: # If pass recursive paramater
+        for root, dirs, files in os.walk(file_or_text):
+            for file in files:
+                file_path = os.path.join(root, file)
+                if os.path.isfile(file_path):
+                    # TODO: Ignore the non source code for "format_code" command
+                    if command == 'format_code':
+                        if not is_source_code_file(file_path):
+                            if verbose:
+                                system_print(f"Ignore non source code file {file_path}")
+                            continue
+
+                    if verbose:
+                        system_print(f"Read input file {file_path}")
+                    with open(file_path, 'r', encoding='utf-8') as file:
+                        content = file.read()
+                        content_list.append(content)
+                        flie_name_list.append(file_path)
+
+    else: # If handle as single file
+        if os.path.exists(file_or_text) and os.path.isfile(file_or_text): # If it is file
+            with open(file_or_text, 'r', encoding='utf-8') as file:
+                if verbose:
+                    system_print(f"Read input file {file_or_text}")
+                content = file.read()
+                content_list.append(content)
+                flie_name_list.append(file_or_text)
+        else: # If it is string
+            if verbose:
+                system_print(f"Read input string: {file_or_text}")
+            content_list.append(file_or_text)
+
 
     # Construct prompt
     command_prompt = aiformat_commands[command]
-    prompt = command_prompt + "\n" + input_file_content
-    if verbose:
-      system_print("Generate final prompt:")
-      print(prompt)
+    template = Template(command_prompt)
 
-    output_content = execute_format(prompt)
-    if verbose:
-      system_print("LLM model output:")
-      print(output_content)
+    for index, input_content in enumerate(content_list):        
+        prompt = template.render(text=input_content)
+        if verbose:
+            system_print("Generate final prompt:")
+            print(prompt)
 
-    if diff:
-        system_print("Diff of input and output:")
-        diff_util.print_diff(input_file_content, output_content)
-    elif inplace:
-        try:
-            with open(input_file_path, 'w', encoding='utf-8') as file:
-                system_print(f"Try to write formated content in {input_file_content}")
-                file.write(output_content)
-        except IOError as e:
-            print(f"An error occurred while writing to the file: {e}")
-    else:
-       system_print("Output of LLM model:")
-       print(output_content)
-    
+        llm_model = chatgpt_util.LlmModel(model=model, temperature=temperature)
+        output_content = llm_model.execute(prompt)
 
-def execute_format(prompt):
-    # Request ChatGPT
-    chatgpt_output = chatgpt_util.request_chatgpt(prompt)
+        if diff:
+            system_print("Diff of input and output:")
+            diff_util.print_diff_with_highlight(input_content, output_content)
+        elif inplace:
+            input_file_name = flie_name_list[index]
+            try:
+                with open(input_file_name, 'w', encoding='utf-8') as file:
+                    system_print(f"Try to write formated content in {input_content}")
+                    file.write(output_content)
+            except IOError as e:
+                print(f"An error occurred while writing to the file: {e}")
+        else:
+            if verbose:
+                system_print("Output of LLM model:")
+            print(output_content)
 
-    # remove triple backticks
-    prefix = "```"
-    if chatgpt_output.startswith(prefix) and chatgpt_output.endswith(prefix):
-        return chatgpt_output[len(prefix):-len(prefix)]
-    return chatgpt_output
+
+def is_source_code_file(file_name):
+    # Get the file extension
+    _, file_extension = os.path.splitext(file_name)
+
+    # Check if the file extension corresponds to a source code file
+    extensions = ['.cpp', '.java', '.py', '.lua', '.c', '.h',
+                              '.js','.html', '.css', '.php', '.sql', '.json',
+                              '.xml', '.cc', '.rb', '.swift']
+    return file_extension.lower() in extensions
+
+
+def is_documents_file(file_name):
+    _, file_extension = os.path.splitext(file_name)
+
+    extensions = ['.md', '.txt', '.log']
+    return file_extension.lower() in extensions
 
 
 if __name__ == '__main__':
