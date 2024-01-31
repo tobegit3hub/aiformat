@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import os
-import pkg_resources
 import shutil
 import click
 import yaml
@@ -17,11 +16,11 @@ from .print_util import system_print
 @click.option('-d', '--diff', is_flag=True, help='Print the diff for the fixed source.')
 @click.option('-i', '--inplace', is_flag=True, help='Make changes to files in place.')
 @click.option('-r', '--recursive', is_flag=True, help='Run recursively over directories.')
-#@click.option('-p', '--parallel', is_flag=True, help='Run in parallel when formatting multiple files.')
 @click.option('-vv', '--verbose', is_flag=True, help='Print out file names while processing.')
-@click.option('-c', '--command', type=click.STRING, default="format_content", help='Use the command, pass -vv to check supported commands.')
+@click.option('-c', '--command', type=click.STRING, default="chat", help='Use the command, pass -vv to check supported commands.')
 @click.option('--model', type=click.STRING, default="gpt-3.5-turbo", help='Use the LLM model(gpt-3.5-turbo or gpt-4-1106-preview).')
 @click.option('--temperature', type=click.FLOAT, default=0, help='Set temperature for the LLM model.')
+#@click.option('-p', '--parallel', is_flag=True, help='Run in parallel when formatting multiple files.')
 def main(file_or_text, diff, inplace, recursive, verbose, command, model, temperature):
     # Print parameter
     if verbose:
@@ -35,8 +34,7 @@ def main(file_or_text, diff, inplace, recursive, verbose, command, model, temper
     config_dir = os.path.expanduser("~/.aiformat")
     config_file_path = os.path.join(config_dir, 'commands.yaml')
 
-    if not os.path.exists(config_dir):
-        os.makedirs(config_dir)
+    os.makedirs(config_dir, exist_ok=True)
 
     if not os.path.exists(config_file_path):
         # Create yaml file from package yaml file
@@ -55,26 +53,30 @@ def main(file_or_text, diff, inplace, recursive, verbose, command, model, temper
 
     # Read input which may be a string, a file or a directory
     content_list = []
-    flie_name_list = []
+    file_name_list = []
 
-    if recursive:  # If pass recursive paramater
+    if recursive:  # If pass recursive parameter
         for root, dirs, files in os.walk(file_or_text):
             for file in files:
                 file_path = os.path.join(root, file)
                 if os.path.isfile(file_path):
-                    # TODO: Ignore the non source code for "format_code" command
-                    if command == 'format_code':
+                    # TODO: Ignore the non source code for commands of code and doc
+                    if "code" in command:
                         if not is_source_code_file(file_path):
                             if verbose:
                                 system_print(f"Ignore non source code file {file_path}")
                             continue
-
+                    elif "doc" in command:
+                        if not is_document_file(file_path):
+                            if verbose:
+                                system_print(f"Ignore non document file {file_path}")
+                            continue
                     if verbose:
                         system_print(f"Read input file {file_path}")
                     with open(file_path, 'r', encoding='utf-8') as file:
                         content = file.read()
                         content_list.append(content)
-                        flie_name_list.append(file_path)
+                        file_name_list.append(file_path)
 
     else:  # If handle as single file
         if os.path.exists(file_or_text) and os.path.isfile(file_or_text):  # If it is file
@@ -83,7 +85,7 @@ def main(file_or_text, diff, inplace, recursive, verbose, command, model, temper
                     system_print(f"Read input file {file_or_text}")
                 content = file.read()
                 content_list.append(content)
-                flie_name_list.append(file_or_text)
+                file_name_list.append(file_or_text)
         else:  # If it is string
             if verbose:
                 system_print(f"Read input string: {file_or_text}")
@@ -109,10 +111,10 @@ def main(file_or_text, diff, inplace, recursive, verbose, command, model, temper
             system_print("Diff of input and output:")
             diff_util.print_diff_with_highlight(input_content, output_content)
         if inplace:
-            input_file_name = flie_name_list[index]
+            input_file_name = file_name_list[index]
             try:
                 with open(input_file_name, 'w', encoding='utf-8') as file:
-                    system_print(f"Try to write formated content in {input_file_name}:")
+                    system_print(f"Try to write formatted content in {input_file_name}:")
                     file.write(output_content)
                     print(output_content)
             except IOError as e:
@@ -134,10 +136,10 @@ def is_source_code_file(file_name):
     return file_extension.lower() in extensions
 
 
-def is_documents_file(file_name):
+def is_document_file(file_name):
     _, file_extension = os.path.splitext(file_name)
 
-    extensions = ['.md', '.txt', '.log']
+    extensions = ['.md', '.txt', '.log', '']
     return file_extension.lower() in extensions
 
 

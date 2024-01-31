@@ -1,12 +1,12 @@
 aiformat_commands:
-  format_content: >
-    Read the content below and try to format the content according to its type. Output the formated text:
-    {{ text }}
+  chat: >
+    Understand the following text from user. Try to chat with user's input and output the response:
+    {{ text }}   
   format_code: >
     Recognize the programming language of the following code and use the best practices of its programming language to format the source code. Output the formated code:
     {{ text }}"
   format_doc: >
-    Format the document below. Ensure that formatting is consistent and output the formated tedocumentxt:
+    Use all best practices to format the following document. Output the formated tedocumentxt:
     {{ text }}
   to_chinese: >
     Translate the text below into Chinese. Ensure that formatting is consistent and output the translated text:
@@ -15,13 +15,15 @@ aiformat_commands:
     Translate the text below into English. Ensure that formatting is consistent and output the translated text:
     {{ text }}
   explain_code: >
-    Explain the code below in simple terms. Ensure that formatting is consistent and output the explanation:
+    Explain the code below in simple terms. Output the explanation:
     {{ text }}
-  generate_unit_test: >
-    Generate a unit test for the following code and output the test code:\n\n{{ text }}
+  gen_ut: >
+    Generate a unit test for the following code and output the unit test source code:
+    {{ text }}
   correct_spelling: >
     Correct the spelling errors in the text below. Ensure that formatting is consistent and output the corrected text:
     {{ text }}
   optimize_code: >
-    Recognize the programming language of the following code and use the best practices of its programming language to format the source code. Output the formated code:
+    Recognize the programming language of the following code and use the best practices of its programming language to optimize the source code. Only output the optimized code and no extra introduction:
     {{ text }}    
+ 

@@ -43,10 +43,16 @@ Options:
 You can translate text or format source code easily.
 
 ```
-aiformat -c to_chinese "hello world"
+# Use "chat" command to do anything
+aiformat "implmenet a python script to format python code"
 
+# Use "-r" to format all source files in subdirectories
 aiformat -c format_code -r ./aiformat --diff --inplace
 
+# Use "to_chinese" to translate text in command-line
+aiformat -c to_chinese "hello world"
+
+# Use "--diff" and "--inplace" to view diff and make changes inplace
 aiformat -c correct_spelling ./README.md --diff --inplace
 ```
 
@@ -54,13 +60,14 @@ aiformat -c correct_spelling ./README.md --diff --inplace
 
 | Command | Description |
 | ------- | ----------- |
-| format_content | Format arbitary content by LLM models. |
+| chat | Chat with LLM models like ChatGPT. |
 | format_code | Format the source code according to its programming language. |
-| format_doc | Format document |
-| format_doc | Format document |
-| format_doc | Format document |
-| format_doc | Format document |
-| format_doc | Format document |
-| format_doc | Format document |
+| format_doc | Format the document with common best practices. |
+| to_chinese | Translate the text into Chinese and maintain the formatting. |
+| to_english | Translate the text into English and maintain the formatting. |
+| explain_code | Explain the source code in simple terms. |
+| gen_ut | Generate the source code of unit test for input file. |
+| correct_spelling | Correct the spelling errors for input file. |
+| optimize_code | Use the best practices to optimize the source code. |
 
-The built-in commands are define in [commands.yaml](./aiformat/prompt/commands.yaml). You can extend new command and prompt in local `~/.aiformat/commands.yaml`.
+The built-in commands are defined in [commands.yaml](./aiformat/prompt/commands.yaml). You can extend new command and prompt in local `~/.aiformat/commands.yaml`.
