@@ -14,7 +14,7 @@ There are common scenarios to use [aiformat](https://github.com/tobegit3hub/aifo
 * Correct spelling and grammar for all documents in entire project.
 * Generate international documents in different languages with one command.
 
-## Install
+## Installation
 
 ```
 pip install aiformat
