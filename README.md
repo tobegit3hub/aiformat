@@ -1,5 +1,10 @@
 # AI Format
 
+* [English](./README.md)
+* [Chinese](./README_zh.md)
+
+## Introduction
+
 The powerful "Swiss Army Knife" which leverages LLM models and prompt engineering to format anything.
 
 There are common scenarios to use [aiformat](https://github.com/tobegit3hub/aiformat):
@@ -27,14 +32,13 @@ Run `aiformat` in command-line.
 
 ```
 $ aiformat --help
-Usage: aiformat [OPTIONS] FILE_OR_TEXT
+Usage: aiformat [OPTIONS] COMMAND FILE_OR_TEXT
 
 Options:
   -d, --diff           Print the diff for the fixed source.
   -i, --inplace        Make changes to files in place.
   -r, --recursive      Run recursively over directories.
   -vv, --verbose       Print out file names while processing.
-  -c, --command TEXT   Use the command, pass -vv to check supported commands.
   --model TEXT         Use the LLM model(gpt-3.5-turbo or gpt-4-1106-preview).
   --temperature FLOAT  Set temperature for the LLM model.
   --help               Show this message and exit.
@@ -43,17 +47,14 @@ Options:
 You can translate text or format source code easily.
 
 ```
-# Use "chat" command to do anything
-aiformat "implmenet a python script to format python code"
-
 # Use "-r" to format all source files in subdirectories
-aiformat -c format_code -r ./aiformat --diff --inplace
+aiformat format_code -r ./aiformat --diff --inplace
 
 # Use "to_chinese" to translate text in command-line
-aiformat -c to_chinese "hello world"
+aiformat to_chinese "hello world"
 
 # Use "--diff" and "--inplace" to view diff and make changes inplace
-aiformat -c correct_spelling ./README.md --diff --inplace
+aiformat correct_spelling ./README.md --diff --inplace
 ```
 
 ## Built-in Commands
@@ -69,5 +70,11 @@ aiformat -c correct_spelling ./README.md --diff --inplace
 | gen_ut | Generate the source code of unit test for input file. |
 | correct_spelling | Correct the spelling errors for input file. |
 | optimize_code | Use the best practices to optimize the source code. |
+
+Run the following command to see all built-in commands.
+
+```
+aiformat commands ''
+```
 
 The built-in commands are defined in [commands.yaml](./aiformat/prompt/commands.yaml). You can extend new command and prompt in local `~/.aiformat/commands.yaml`.
